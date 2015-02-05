@@ -1,5 +1,5 @@
 base <- getwd()
-tony <- setwd(paste0(base, "/tony_b"))
+tony <- setwd(paste0(base, "/Documents/tony_b"))
 
 # Read in # what does skip and stingAsFactors do?
 setwd("public_data")
@@ -94,6 +94,11 @@ lunch$free_reduced <- lunch$free + lunch$reduced
 # Make a free/reduced percentage
 lunch$per_fr <- lunch$free_reduced / lunch$totmem * 100
 
+#take out unnecessary columns 
+
+lunch <- lunch[,c("district", "school_number", "school", "totmem", "free", "reduced",
+                  "free_reduced", "per_fr")]
+
 # Check out your fine cleaning work
 head(lunch)
 
@@ -108,8 +113,7 @@ names(race) <- c("district1", "district", "school_number", "school", "grade", "w
                  "hispanic","asian", "hawian", "native", "multi", "female", "male", "total" )
 
 #remove commas #!!!!!!!!!! DON'T MAKE GRADE NUMERIC - IT HAS THINGS LIKE K AND PK
-for (i in c(#"grade", 
-            "school_number", "white", "black", "hispanic", "asian", "hawian", "native", "multi", 
+for (i in c("school_number", "white", "black", "hispanic", "asian", "hawian", "native", "multi", 
             "female", "male", "total")){
   race[,i ] <- 
     as.numeric(gsub(",", "", race[,i]))
@@ -140,13 +144,21 @@ race_by_school <- race %>%
 
 # NOW We've got 3 datasets, each with one row = one school
 # MERGE all three datasets together by school number
-df <- left_join(x = pop, 
+
+
+df <- left_join(x = lunch, 
                 y = race_by_school)
 df <- left_join(x = df,
-                y = lunch)
+                y = pop)
+
+#still an issue with the last column, but the rest is ok now. 
+
+#how does it know to join by school number?
 
 # Clean up df a bit
-df <- df[,c("school_number", )]
+df <- df[,c("district","school_number","school", "totmem", "type", "total_from_race", 
+            "total_white", "total_black", "total_hispanic", "total_asian",
+            "free_reduced", "per_fr")] 
 
 
 # Get total students, schools, etc. by county
@@ -159,11 +171,13 @@ group_by(district) %>%
             total_schools_elem = length(type[which(type == "mid")]),
             total_schools_elem = length(type[which(type == "high")]))
 
+
+
 # Get racial breakdown by county
 by_county2 <- race %>%
-  group_by(district) %>%
+  group_by(district, grade) %>%
   summarise(white_students = sum(white, na.rm = TRUE),
             black_students = sum(black, na.rm = TRUE),
-            elem_students = )
+            hispanic_students = sum(hispanic, na.rm = TRUE))
 
 
