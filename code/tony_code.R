@@ -1,6 +1,8 @@
-setwd("/home/benbrew/Documents/private")
+base <- getwd()
+tony <- setwd(paste0(base, "/tony_b"))
 
 # Read in # what does skip and stingAsFactors do?
+setwd("public_data")
 race <- read.csv("RaceGender.csv", skip = 6, stringsAsFactors = FALSE)
 pop <- read.csv("SchoolPop.csv", skip = 5, stringsAsFactors = FALSE)
 lunch <- read.csv("FreeLunch.csv", skip = 5, stringsAsFactors = FALSE)
@@ -47,10 +49,10 @@ for (i in 1:nrow(pop)){
 }
 
 # Remove unecessary columns
-pop <- pop[,c("DISTRICT.NAME", "SCHOOL.NAME", "totmem", "type")]
+pop <- pop[,c("DISTRICT.NAME","SCHL..", "SCHOOL.NAME", "totmem", "type")]
 
 # Rename some columns
-names(pop) <- c("district", "school", "totmem", "type")
+names(pop) <- c("district","school_number", "school", "totmem", "type")
 
 # Check out our cleaned up dataframe
 head(pop)
@@ -102,11 +104,12 @@ head(race)
 
 #rename columns 
 
-names(race) <- c("district1", "district", "school1", "school", "grade", "white", "black",
+names(race) <- c("district1", "district", "school_number", "school", "grade", "white", "black",
                  "hispanic","asian", "hawian", "native", "multi", "female", "male", "total" )
 
-#remove commas
-for (i in c("grade", "white", "black", "hispanic", "asian", "hawian", "native", "multi", 
+#remove commas #!!!!!!!!!! DON'T MAKE GRADE NUMERIC - IT HAS THINGS LIKE K AND PK
+for (i in c(#"grade", 
+            "school_number", "white", "black", "hispanic", "asian", "hawian", "native", "multi", 
             "female", "male", "total")){
   race[,i ] <- 
     as.numeric(gsub(",", "", race[,i]))
@@ -117,13 +120,50 @@ str(race)
 
 #remove uneeded rows
 
-race <- race[,c("district", "school", "grade", "white", "black", "hispanic", "asian", "hawian",
+race <- race[,c("district", "school_number", "school", "grade", "white", "black", "hispanic", "asian", "hawian",
                 "native", "multi", "female", "male", "total")]
 
+###################################################
 #Not sure what to do with this. do we just want totals for each school, in that case
 #we could use the school total row at the end of each school, but none of them have a 
 #unique name. And honestly, I suck at writing loops. Can you help me with this?
 library(dplyr)
-pop %>%
+
+# Group race together by school (don't need by grade)
+race_by_school <- race %>%
+  group_by(school, district, school_number) %>%
+  summarise(total_from_race = sum(total, na.rm = TRUE),
+            total_white = sum(white, na.rm = TRUE),
+            total_black = sum(black, na.rm = TRUE),
+            total_hispanic = sum(hispanic, na.rm = TRUE),
+            total_asian = sum(asian, na.rm = TRUE))
+
+# NOW We've got 3 datasets, each with one row = one school
+# MERGE all three datasets together by school number
+df <- left_join(x = pop, 
+                y = race_by_school)
+df <- left_join(x = df,
+                y = lunch)
+
+# Clean up df a bit
+df <- df[,c("school_number", )]
+
+
+# Get total students, schools, etc. by county
+by_county <- pop %>%
 group_by(district) %>% 
-  summarise(public_schools = n())
+  summarise(total_schools = n(),
+            total_students = sum(totmem, na.rm = TRUE),
+            total_schools_elem = length(type[which(type == "pk")]),
+            total_schools_elem = length(type[which(type == "elem")]),
+            total_schools_elem = length(type[which(type == "mid")]),
+            total_schools_elem = length(type[which(type == "high")]))
+
+# Get racial breakdown by county
+by_county2 <- race %>%
+  group_by(district) %>%
+  summarise(white_students = sum(white, na.rm = TRUE),
+            black_students = sum(black, na.rm = TRUE),
+            elem_students = )
+
+
