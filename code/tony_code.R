@@ -1,8 +1,7 @@
-base <- getwd()
-tony <- setwd(paste0(base, "/Documents/tony_b"))
+
 
 # Read in # what does skip and stingAsFactors do?
-setwd("public_data")
+setwd("/home/benbrew/Documents/tony_b/public_data")
 race <- read.csv("RaceGender.csv", skip = 6, stringsAsFactors = FALSE)
 pop <- read.csv("SchoolPop.csv", skip = 5, stringsAsFactors = FALSE)
 lunch <- read.csv("FreeLunch.csv", skip = 5, stringsAsFactors = FALSE)
@@ -145,11 +144,17 @@ race_by_school <- race %>%
 # NOW We've got 3 datasets, each with one row = one school
 # MERGE all three datasets together by school number
 
+pop1 <- pop[,c("district", "school", "totmem", "type")]
+
+pop1 <- pop1$
+pop1 <- pop1 %>% 
+  group_by(school, type) %>%
+  
 
 df <- left_join(x = lunch, 
                 y = race_by_school)
 df <- left_join(x = df,
-                y = pop)
+                y = pop1)
 
 #still an issue with the last column, but the rest is ok now. 
 
