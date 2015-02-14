@@ -153,30 +153,25 @@ pop1 <- pop1 %>%
 
 df <- left_join(x = lunch, 
                 y = race_by_school)
+
+pop1$totmempop <- pop1$totmem; pop1$totmem <- NULL
 df <- left_join(x = df,
                 y = pop1)
-
-#still an issue with the last column, but the rest is ok now. 
-
-#how does it know to join by school number?
 
 # Clean up df a bit
 df <- df[,c("district","school_number","school", "totmem", "type", "total_from_race", 
             "total_white", "total_black", "total_hispanic", "total_asian",
             "free_reduced", "per_fr")] 
 
-
 # Get total students, schools, etc. by county
 by_county <- pop %>%
 group_by(district) %>% 
   summarise(total_schools = n(),
             total_students = sum(totmem, na.rm = TRUE),
-            total_schools_elem = length(type[which(type == "pk")]),
+            total_schools_pk = length(type[which(type == "pk")]),
             total_schools_elem = length(type[which(type == "elem")]),
-            total_schools_elem = length(type[which(type == "mid")]),
-            total_schools_elem = length(type[which(type == "high")]))
-
-
+            total_schools_mid = length(type[which(type == "mid")]),
+            total_schools_high = length(type[which(type == "high")]))
 
 # Get racial breakdown by county
 by_county2 <- race %>%
