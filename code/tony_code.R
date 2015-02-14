@@ -163,7 +163,11 @@ df <- df[,c("district","school_number","school", "totmem", "type", "total_from_r
             "total_white", "total_black", "total_hispanic", "total_asian",
             "free_reduced", "per_fr")] 
 
-# Get total students, schools, etc. by county
+#write df as csv
+
+write.csv(df, "/home/benbrew/Documents/tony_b/public_schools.csv")
+
+# Get total students, schools, etc. by countonyty
 by_county <- pop %>%
 group_by(district) %>% 
   summarise(total_schools = n(),
