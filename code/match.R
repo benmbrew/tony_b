@@ -11,7 +11,7 @@ if(Sys.info()['user'] == 'joebrew'){
   private <- '/home/joebrew/Documents/private_data/boselli/'
 } else if(Sys.info()['user'] == 'benbrew'){
   public <- '/home/benbrew/Documents/tony_b'
-  private <- 'home/benbrew/Documents/private'
+  private <- '/home/benbrew/Documents/private'
 }
 
 #####
