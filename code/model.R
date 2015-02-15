@@ -4,21 +4,20 @@ setwd("/home/benbrew/Documents/private/")
 tony <- read.csv("merged.csv")
 
 #make new name holder for tony#####
-
 tony$name <- NA
 
 tony$School[1]
 
 #isolate nth school 
-
-temp <- tony$School[1] #later replace 1 with i. 
-mat <- adist(x=temp, y=school$school)
-
-#which was is the best
-
-ind <-which.min(mat)
-
-school$school[ind]
+# 
+# temp <- tony$School[1] #later replace 1 with i. 
+# mat <- adist(x=temp, y=school$school)
+# 
+# #which was is the best
+# 
+# ind <-which.min(mat)
+# 
+# school$school[ind]
 
 #add county to to school in both data frames 
 
@@ -29,25 +28,11 @@ tony$School <-paste0(tony$county, sep=" ",tony$School, collapse=NULL)
 
 
 #make column lower case
-
 school$School <- tolower(school$School)
-
 tony$School <- tolower(tony$School)
 
 
 #remove common words withing school
-
-#school$School <- gsub("elementary", "E", school$School)
-#school$School <- gsub("elem", "E", school$School)
-#school$School <- gsub("middle", "M", school$School)
-#school$School <- gsub("high", "H", school$School)
-#school$School <- gsub("school", "", school$School)
-
-#tony$School <- gsub("elementary", "e", tony$School)
-#tony$School <- gsub("elem", "e", tony$School)
-#tony$School <- gsub("middle", "m", tony$School)
-#tony$School <- gsub("high", "h", tony$School)
-#tony$School <- gsub("school", "", tony$School)
 
 school$School <- gsub("elementary", "", school$School)
 school$School <- gsub("elem", "", school$School)
@@ -78,125 +63,120 @@ tony$School <- gsub(",", "", tony$School)
 tony$School <- gsub("/", "", tony$School)
 tony$School <- gsub("-", "", tony$School)
 
-
-
-
 #try first row again
+# temp <- tony$School[1] #later replace 1 with i. 
+# mat <- adist(x=temp, y=school$School)
+# 
+# temp <- tony$School[1] #later replace 1 with i. 
+# mat <- adist(x=temp, y=school$School)
+# 
+# #which was is the best
+# 
+# ind <-which.min(mat)
+# 
+# school$School[ind]
+# 
+# #try second row..
+# 
+# temp <- tony$School[2] #later replace 1 with i. 
+# mat <- adist(x=temp, y=school$School)
+# 
+# temp <- tony$School[2] #later replace 1 with i. 
+# mat <- adist(x=temp, y=school$School)
+# 
+# #which was is the best
+# 
+# ind <-which.min(mat)
+# 
+# school$School[ind]
+# 
+# #try third row..
+# 
+# temp <- tony$School[3] #later replace 1 with i. 
+# mat <- adist(x=temp, y=school$School)
+# 
+# temp <- tony$School[3] #later replace 1 with i. 
+# mat <- adist(x=temp, y=school$School)
+# 
+# #which was is the best
+# 
+# ind <-which.min(mat)
+# 
+# school$School[ind]
+# 
+# 
+# #try 50th row..
+# 
+# temp <- tony$School[50] #later replace 1 with i. 
+# mat <- adist(x=temp, y=school$School)
+# 
+# temp <- tony$School[50] #later replace 1 with i. 
+# mat <- adist(x=temp, y=school$School)
+# 
+# #which was is the best
+# 
+# ind <-which.min(mat)
+# 
+# school$School[ind]
+# 
+# #try 100th row..
+# 
+# temp <- tony$School[100] #later replace 1 with i. 
+# mat <- adist(x=temp, y=school$School)
+# 
+# temp <- tony$School[100] #later replace 1 with i. 
+# mat <- adist(x=temp, y=school$School)
+# 
+# #which was is the best
+# 
+# ind <-which.min(mat)
+# 
+# school$School[ind]
+# 
+# #try 1000th row..
+# 
+# temp <- tony$School[1000] #later replace 1 with i. 
+# mat <- adist(x=temp, y=school$School)
+# 
+# temp <- tony$School[1000] #later replace 1 with i. 
+# mat <- adist(x=temp, y=school$School)
+# 
+# #which was is the best
+# 
+# ind <-which.min(mat)
+# 
+# school$School[ind]
+# 
+# #try 2000th row..
+# 
+# 
+# temp <- tony$School[1500] #later replace 1 with i. 
+# mat <- adist(x=temp, y=school$School)
+# 
+# temp <- tony$School[1500] #later replace 1 with i. 
+# mat <- adist(x=temp, y=school$School)
+# 
+# #which was is the best
+# 
+# ind <-which.min(mat)
+# 
+# school$School[ind]
+# 
+# #I think it's good### now the loop
 
-temp <- tony$School[1] #later replace 1 with i. 
-mat <- adist(x=temp, y=school$School)
-
-temp <- tony$School[1] #later replace 1 with i. 
-mat <- adist(x=temp, y=school$School)
-
-#which was is the best
-
-ind <-which.min(mat)
-
-school$School[ind]
-
-#try second row..
-
-temp <- tony$School[2] #later replace 1 with i. 
-mat <- adist(x=temp, y=school$School)
-
-temp <- tony$School[2] #later replace 1 with i. 
-mat <- adist(x=temp, y=school$School)
-
-#which was is the best
-
-ind <-which.min(mat)
-
-school$School[ind]
-
-#try third row..
-
-temp <- tony$School[3] #later replace 1 with i. 
-mat <- adist(x=temp, y=school$School)
-
-temp <- tony$School[3] #later replace 1 with i. 
-mat <- adist(x=temp, y=school$School)
-
-#which was is the best
-
-ind <-which.min(mat)
-
-school$School[ind]
-
-
-#try 50th row..
-
-temp <- tony$School[50] #later replace 1 with i. 
-mat <- adist(x=temp, y=school$School)
-
-temp <- tony$School[50] #later replace 1 with i. 
-mat <- adist(x=temp, y=school$School)
-
-#which was is the best
-
-ind <-which.min(mat)
-
-school$School[ind]
-
-#try 100th row..
-
-temp <- tony$School[100] #later replace 1 with i. 
-mat <- adist(x=temp, y=school$School)
-
-temp <- tony$School[100] #later replace 1 with i. 
-mat <- adist(x=temp, y=school$School)
-
-#which was is the best
-
-ind <-which.min(mat)
-
-school$School[ind]
-
-#try 1000th row..
-
-temp <- tony$School[1000] #later replace 1 with i. 
-mat <- adist(x=temp, y=school$School)
-
-temp <- tony$School[1000] #later replace 1 with i. 
-mat <- adist(x=temp, y=school$School)
-
-#which was is the best
-
-ind <-which.min(mat)
-
-school$School[ind]
-
-#try 2000th row..
-
-
-temp <- tony$School[1500] #later replace 1 with i. 
-mat <- adist(x=temp, y=school$School)
-
-temp <- tony$School[1500] #later replace 1 with i. 
-mat <- adist(x=temp, y=school$School)
-
-#which was is the best
-
-ind <-which.min(mat)
-
-school$School[ind]
-
-#I think it's good### now the loop
-
-
-For(i in 1:nrow(tony)){
+tony$name <- NA
+for(i in 1:nrow(tony)){
   
   temp <- tony$School[i]  
   mat <- adist(x=temp, y=school$School)
   
-  temp <- tony$School[i]  
-  mat <- adist(x=temp, y=school$School)
-  
-
   ind <-which.min(mat)
   
   tony$name[i] <- school$School[ind]
 }
+
+# Compare School and name in tony
+tony[,c("School", "name")]
 
 #make new colummn school
 
