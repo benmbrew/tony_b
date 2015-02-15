@@ -67,6 +67,9 @@ remove_junk <- function(df){
   df$school <- gsub("high", "hs", df$school)
   df$school <- gsub("school", "", df$school)
   df$school <- gsub("schl ", "", df$school)
+  df$school <- gsub("youth", "", df$school)
+  df$school <- gsub("academy", "", df$school)
+  df$school <- gsub("senior", "", df$school)
   df$school <- gsub("sch ", "", df$school)
   df$school <- gsub("scho ", "", df$school)
   df$school <- gsub("program", "", df$school)
@@ -140,11 +143,17 @@ for(i in 1:nrow(tony)){
   tony$name[i] <- posibs[ind]
   
   # Assign match score to tony as well
-  tony$match_score[i] <- min(mat, na.rm = TRUE)
+  if(length(mat) < 1){
+    tony$match_score[i] <- NA
+  } else{
+    tony$match_score[i] <- min(mat, na.rm = TRUE)
+  }
 }
 
-# Explore match score
+# Explore match score (remember that low is good!)
 hist(tony$match_score) # most are great!
+tally(group_by(tbl_df(tony), match_score)) 
+table(is.na(tony$match_score)) # a few couldn't get any match at all
 
 # Look at different match scores to decide what the cutoff should be
 # the lower the better match
@@ -153,13 +162,24 @@ tony[which(tony$match_score == 2),c("school", "name")] # pretty close to perfect
 tony[which(tony$match_score == 3),c("school", "name")] # good
 tony[which(tony$match_score == 4),c("school", "name")] # decent
 tony[which(tony$match_score == 5),c("school", "name")] # mediocre
-
 tony[which(tony$match_score >=10),c("school", "name")] # terrible
 
+# Let's keep only those with a match_score of less than
+tony_small <- tony[which(tony$match_score <= 0),]
 
 
 #final 
-
-final <- left_join(x=tony,
+final <- left_join(x=tony_small,
                    y=school, 
                    by="name")
+
+# Clean up final
+final <- final[,c("school.x", "name", "school_number", "totmem", "type", "year",
+                  "total_black", "total_hispanic", "total_asian", "free_reduced", "per_fr",
+                  "number_vaccinated", "number_enrolled", "percent_vaccinated", "county", "match_score")]
+
+# Remove 2013 and duplicate rows
+final <- final[which(final$year == 2014),]
+final <- final[!duplicated(final$name),]
+
+
