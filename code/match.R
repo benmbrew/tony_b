@@ -199,43 +199,45 @@ final$number_enrolled <- as.numeric(final$number_enrolled)
 final$percent_vaccinated <- gsub("%", "", final$percent_vaccinated)
 final$percent_vaccinated <- as.numeric(final$percent_vaccinated)
 
-
 #new columns for percent black, percent asian, percent hispanic
-
 final$per_black <- (final$total_black/final$totmem)*100
 final$per_asian <- (final$total_asian/final$totmem)*100
 final$per_hispanic <- (final$total_hispanic/final$totmem)*100
-
 final$per_black <- round(final$per_black, 2)
 final$per_asian <- round(final$per_asian, 2)
 final$per_hispanic <- round(final$per_hispanic, 2)
 
 #write new csv
-
+names(final)[1] <- "name_from_tony"
 final <- data.frame(final)
 
 #basic stats and charts for tony
 head(final)
 
 #make chart for avg immunization for type of grade (elem, mid, high) 
-
-final_1 <- final %>%
+by_type <- final %>%
   group_by(type) %>% 
   summarise(avg_vac = mean(percent_vaccinated, na.rm =TRUE))
 
 #get rid of NA 
-final_1 <- final_1[which(!is.na(final_1$type)),]
+by_type <- by_type[which(!is.na(by_type$type)),]
 
 #order the columns
-
-final_1 <- arrange(final_1, avg_vac)
+by_type <- arrange(by_type, avg_vac)
 
 #barplot by type of grade and avg vaccination achieved 
-barplot(final_1$avg_vac,
-        names.arg = final_1$type,
-        col="lightgreen")
-  
-       
+bp <- barplot(by_type$avg_vac,
+        names.arg = by_type$type,
+        col="lightblue",
+        ylab = "Immunization rate",
+        ylim = c(0, max(by_type$avg_vac) * 1.1))
+box("plot")
+text(x = bp[,1],
+     y = by_type$avg_vac,
+     pos = 1,
+     labels = paste0(round(by_type$avg_vac, digits = 2), "%"))  
+abline(h = seq(0,20,2), col = adjustcolor("black", alpha.f = 0.2), lty = 3)
+title(main = "Immunization (among matched/modeled schools only)")
 #plot total population of school and immunization rate
 
 plot(final$totmem, final$percent_vaccinated,
@@ -245,32 +247,47 @@ plot(final$totmem, final$percent_vaccinated,
      xlim=c(0, 3200),
      ylim=c(0, 50),
      pch=16,
-     col=adjustcolor("blue", alpha.f=0.6))
+     col=adjustcolor("lightblue", alpha.f=0.4))
 abline(lm(final$percent_vaccinated ~ final$totmem))
 
 #plot county and average immunization 
-
-final_2 <- final %>% 
+by_county <- final %>% 
   group_by(county) %>%
   summarise(avg_vac = mean(percent_vaccinated, na.rm=TRUE))
 
+# order
+by_county <- arrange(by_county, avg_vac)
+
 #how do I fit the names onto the X axis?
-barplot(final_2$avg_vac,
-        names.arg = c("Baker", "Brad", "Clay", "Colum","Dade", "Duval", 
-                      "Flagler", "Hern", "Hills", "Marion", "Okal", "Osce",
-                      "Palm B", "Pasco", "Polk", "Santa Rosa", "Sara", "Seminole",
-                      "St. L", "Sumter"),
-        col="lightgreen")
+cols <- adjustcolor(colorRampPalette(c("orange", "yellow", "darkgreen"))(nrow(by_county)), alpha.f = 0.5)
+bp <- barplot(by_county$avg_vac,
+        names.arg = by_county$county,
+        cex.names = 0.7,
+        las = 3,
+        col = cols,
+        ylim = c(0, max(by_county$avg_vac) * 1.1))
+text(x = bp[,1],
+     y = by_county$avg_vac,
+     pos = 3,
+     labels = paste0(round(by_county$avg_vac, digits = 1), "%"),
+     cex = 0.6,
+     col = cols)
+box("plot")
+abline(h = seq(0,30, 2), col = adjustcolor("black", alpha.f = 0.2), lty = 3)
 
 #vaccination by free lunch
-
+type_cols <- rainbow(length(levels(factor(final$type))))
 plot(final$per_fr, final$percent_vaccinated,
      main="Free Lunch and Vaccination Rate",
      xlab="Percent Free Lunch",
      ylab="Percent Vaccinated",
      pch=16,
-     col=adjustcolor("blue", alpha.f=0.6))
-
+     cex = final$totmem/ 1000,
+     col = adjustcolor(type_cols[as.numeric(factor(final$type))], alpha.f = 0.6))
+legend(x = "topleft",
+       pch = 16,
+       col = type_cols,
+       legend = levels(factor(final$type)))
 
 #not really much of a trend here
 
@@ -281,8 +298,13 @@ plot(final$per_black, final$percent_vaccinated,
      xlab="Percent Black",
      ylab="Percent Vaccinated",
      pch=16,
-     col=adjustcolor("blue", alpha.f=0.6))
+     cex = final$totmem/ 1000,
+     col = adjustcolor(type_cols[as.numeric(factor(final$type))], alpha.f = 0.6))
 
+legend(x = "topleft",
+       pch = 16,
+       col = type_cols,
+       legend = levels(factor(final$type)))
 #hispanic 
 
 plot(final$per_hispanic, final$percent_vaccinated,
