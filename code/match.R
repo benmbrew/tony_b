@@ -165,7 +165,7 @@ tony[which(tony$match_score == 5),c("school", "name")] # mediocre
 tony[which(tony$match_score >=10),c("school", "name")] # terrible
 
 # Let's keep only those with a match_score of less than
-tony_small <- tony[which(tony$match_score <= 0),]
+tony_small <- tony[which(tony$match_score <= 1),]
 
 
 #final 
@@ -182,4 +182,177 @@ final <- final[,c("school.x", "name", "school_number", "totmem", "type", "year",
 final <- final[which(final$year == 2014),]
 final <- final[!duplicated(final$name),]
 
+#build a model and then predict.
 
+#change to numeric 
+
+str(final)
+
+final$totmem <- as.numeric(final$totmem)
+final$total_black <- as.numeric(final$total_black)
+final$total_asian <- as.numeric(final$total_asian)
+final$total_hispanic <- as.numeric(final$total_hispanic)
+final$free_reduced <- as.numeric(final$free_reduced)
+final$per_fr <- as.numeric(final$per_fr)
+final$number_vaccinated <- as.numeric(final$number_vaccinated)
+final$number_enrolled <- as.numeric(final$number_enrolled)
+final$percent_vaccinated <- gsub("%", "", final$percent_vaccinated)
+final$percent_vaccinated <- as.numeric(final$percent_vaccinated)
+
+
+#new columns for percent black, percent asian, percent hispanic
+
+final$per_black <- (final$total_black/final$totmem)*100
+final$per_asian <- (final$total_asian/final$totmem)*100
+final$per_hispanic <- (final$total_hispanic/final$totmem)*100
+
+final$per_black <- round(final$per_black, 2)
+final$per_asian <- round(final$per_asian, 2)
+final$per_hispanic <- round(final$per_hispanic, 2)
+
+#write new csv
+
+final <- data.frame(final)
+
+#basic stats and charts for tony
+head(final)
+
+#make chart for avg immunization for type of grade (elem, mid, high) 
+
+final_1 <- final %>%
+  group_by(type) %>% 
+  summarise(avg_vac = mean(percent_vaccinated, na.rm =TRUE))
+
+#get rid of NA 
+final_1 <- final_1[which(!is.na(final_1$type)),]
+
+#order the columns
+
+final_1 <- arrange(final_1, avg_vac)
+
+#barplot by type of grade and avg vaccination achieved 
+barplot(final_1$avg_vac,
+        names.arg = final_1$type,
+        col="lightgreen")
+  
+       
+#plot total population of school and immunization rate
+
+plot(final$totmem, final$percent_vaccinated,
+     main="School Population and Immunization",
+     xlab="Total Population of School",
+     ylab="Percent Vaccinated",
+     xlim=c(0, 3200),
+     ylim=c(0, 50),
+     pch=16,
+     col=adjustcolor("blue", alpha.f=0.6))
+abline(lm(final$percent_vaccinated ~ final$totmem))
+
+#plot county and average immunization 
+
+final_2 <- final %>% 
+  group_by(county) %>%
+  summarise(avg_vac = mean(percent_vaccinated, na.rm=TRUE))
+
+#how do I fit the names onto the X axis?
+barplot(final_2$avg_vac,
+        names.arg = c("Baker", "Brad", "Clay", "Colum","Dade", "Duval", 
+                      "Flagler", "Hern", "Hills", "Marion", "Okal", "Osce",
+                      "Palm B", "Pasco", "Polk", "Santa Rosa", "Sara", "Seminole",
+                      "St. L", "Sumter"),
+        col="lightgreen")
+
+#vaccination by free lunch
+
+plot(final$per_fr, final$percent_vaccinated,
+     main="Free Lunch and Vaccination Rate",
+     xlab="Percent Free Lunch",
+     ylab="Percent Vaccinated",
+     pch=16,
+     col=adjustcolor("blue", alpha.f=0.6))
+
+
+#not really much of a trend here
+
+#black 
+
+plot(final$per_black, final$percent_vaccinated,
+     main="Percent Black and Vaccination Rate",
+     xlab="Percent Black",
+     ylab="Percent Vaccinated",
+     pch=16,
+     col=adjustcolor("blue", alpha.f=0.6))
+
+#hispanic 
+
+plot(final$per_hispanic, final$percent_vaccinated,
+     main="Percent Hispanic and Vaccination Rate",
+     xlab="Percent Hispanic",
+     ylab="Percent Vaccinated",
+     pch=16,
+     col=adjustcolor("blue", alpha.f=0.6))
+
+#asian 
+
+plot(final$per_hispanic, final$percent_vaccinated,
+     main="Percent Asian and Vaccination Rate",
+     xlab="Percent Asian",
+     ylab="Percent Vaccinated",
+     pch=16,
+     col=adjustcolor("blue", alpha.f=0.6))
+
+#not very interesting with race...
+
+#basic linear model 
+
+mod <- lm(percent_vaccinated ~ totmem + type + per_black +
+            per_hispanic + per_asian + per_fr + county, data=final)
+summary(mod)
+
+#predict 
+
+final$predicted <- predict(mod, 
+                            newdata = final)
+summary(final$predicted)
+head(final, n = 10)
+
+
+# prediction_intervals
+prediction_intervals <- data.frame(predict(object = mod,
+                                           interval = "prediction",
+                                           newdata = final,
+                                           level = 0.95))
+
+#create columns for lower and upper bound of confidence intervals
+
+final$lwr <- prediction_intervals$lwr
+final$upr <- prediction_intervals$upr
+
+#create columns to show if we over or under estimate the immunization rate
+final$undest <- ifelse(final$percent_vaccinated > final$upr, TRUE, FALSE)
+final$overest <- ifelse(final$percent_vaccinated < final$lwr, TRUE, FALSE)
+
+#the confidence intervals are pretty large... 
+
+#we seem to underestimate the real level of vaccination.
+#the red observations are outside are CI, which is already pretty large.
+my_colors <- adjustcolor(ifelse(final$undest, "darkred", "black"), alpha.f = 0.2)
+plot(x = final$predicted,
+     y = final$percent_vaccinated,
+     col = my_colors,
+     pch = 16)
+
+#we start to overestimate at higher levels of vacination. 
+my_colors <- adjustcolor(ifelse(final$overest, "darkred", "black"), alpha.f = 0.2)
+plot(x = final$predicted,
+     y = final$percent_vaccinated,
+     col = my_colors,
+     pch = 16)
+
+#together- at higher levels of vaccination the model isn't great..
+my_colors <- adjustcolor(ifelse(final$undest, "darkblue",
+                                ifelse(final$overest, "darkred", "black")), alpha.f = 0.2)
+plot(x = final$predicted,
+     y = final$percent_vaccinated,
+     col = my_colors,
+     pch = 16)
