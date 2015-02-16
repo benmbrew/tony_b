@@ -230,7 +230,8 @@ bp <- barplot(by_type$avg_vac,
         names.arg = by_type$type,
         col="lightblue",
         ylab = "Immunization rate",
-        ylim = c(0, max(by_type$avg_vac) * 1.1))
+        ylim = c(0, max(by_type$avg_vac) * 1.1),
+        las=1)
 box("plot")
 text(x = bp[,1],
      y = by_type$avg_vac,
@@ -250,16 +251,17 @@ plot(final$totmem, final$percent_vaccinated,
      col=adjustcolor("lightblue", alpha.f=0.4))
 abline(lm(final$percent_vaccinated ~ final$totmem))
 
-#plot county and average immunization 
+#plot county and average immunization, using tony's larger dataset
 by_county <- final %>% 
   group_by(county) %>%
   summarise(avg_vac = mean(percent_vaccinated, na.rm=TRUE))
+
 
 # order
 by_county <- arrange(by_county, avg_vac)
 
 #how do I fit the names onto the X axis?
-cols <- adjustcolor(colorRampPalette(c("orange", "yellow", "darkgreen"))(nrow(by_county)), alpha.f = 0.5)
+cols <- adjustcolor(colorRampPalette(c("lightgreen", "green", "blue"))(nrow(by_county)), alpha.f = 0.5)
 bp <- barplot(by_county$avg_vac,
         names.arg = by_county$county,
         cex.names = 0.7,
@@ -270,10 +272,11 @@ text(x = bp[,1],
      y = by_county$avg_vac,
      pos = 3,
      labels = paste0(round(by_county$avg_vac, digits = 1), "%"),
-     cex = 0.6,
+     cex = 0.4,
      col = cols)
 box("plot")
 abline(h = seq(0,30, 2), col = adjustcolor("black", alpha.f = 0.2), lty = 3)
+title(main = "Immunization Rate by County (Matched Schools)")
 
 #vaccination by free lunch
 type_cols <- rainbow(length(levels(factor(final$type))))
@@ -372,9 +375,22 @@ plot(x = final$predicted,
      pch = 16)
 
 #together- at higher levels of vaccination the model isn't great..
-my_colors <- adjustcolor(ifelse(final$undest, "darkblue",
-                                ifelse(final$overest, "darkred", "black")), alpha.f = 0.2)
+my_colors <- adjustcolor(ifelse(final$undest, "darkred",
+                                ifelse(final$overest, "darkred", "darkgreen")), alpha.f = 0.4)
+
+axes_sc<-pretty(c(0,40))
 plot(x = final$predicted,
      y = final$percent_vaccinated,
      col = my_colors,
-     pch = 16)
+     pch = 16,
+     main="Accuracy of Prediction Model",
+     xlab="Predicted Immunization Rate",
+     ylab="Observed Immunization Rate",
+     xlim=c(0,max(axes_sc)),
+     ylim=c(0,max(axes_sc)),
+     yaxt="n",
+     axes=F
+)
+axis(1,at=axes_sc)
+axis(2,at=axes_sc,las=1)
+lines(1,1)
