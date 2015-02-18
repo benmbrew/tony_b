@@ -425,8 +425,102 @@ school <- school[which(!is.na(school$predicted)),]
 # Remove those with screwy denominators (ie, predicted rate greater than denom)
 school <- school[which(school$predicted < 100),] #write csv and add column predicted number
 
-#predict- this shows prediction 
+#### 
+# MAP PREDICTED VALUES
+####
+library(maps)
 
+# Read in map file
+fl <- map("county", "fl", plot = FALSE)
+
+# Clean up names to match those of school$district
+fl$names <- gsub("florida,", "", fl$names)
+fl$names <- gsub(":main$|", "", fl$names)
+fl$names <- gsub(":spit$|", "", fl$names)
+fl$names <- gsub("miami-dade", "dade", fl$names)
+fl$names <- gsub("de soto", "desoto", fl$names)
+
+# Make new indicator in fl to reflect expected mean imm rate
+fl$predicted_mean <- NA
+fl$predicted_mean_elem <- NA
+fl$predicted_mean_mid <- NA
+fl$predicted_mean_high <- NA
+fl$predicted_number <- NA
+
+for (i in 1:length(fl$names)){
+  sub_school <- school[which(school$district == fl$names[i]),]
+  fl$predicted_mean[i] <- 
+    weighted.mean(sub_school$predicted, sub_school$totmem, na.rm = TRUE)
+  elem_school <- sub_school[which(sub_school$type == "elem"),]
+  fl$predicted_mean_elem[i] <- 
+    weighted.mean(elem_school$predicted, elem_school$totmem, na.rm = TRUE)
+  mid_school <- sub_school[which(sub_school$type == "mid"),]
+  fl$predicted_mean_mid[i] <- 
+    weighted.mean(mid_school$predicted, mid_school$totmem, na.rm = TRUE)
+  high_school <- sub_school[which(sub_school$type == "high"),]
+  fl$predicted_mean_high[i] <- 
+    weighted.mean(high_school$predicted, high_school$totmem, na.rm = TRUE)
+  fl$predicted_number[i] <- 
+    sum((sub_school$predicted / 100) * sub_school$totmem, na.rm = TRUE)
+}
+
+# Write function to map
+map_fun <- function(cols = c("darkorange", "white", "blue"), var = fl$predicted_mean,
+                    legend_round = 0){
+  quants <- quantile(var, na.rm = TRUE, probs = seq(0,1,0.1))
+  
+  my_values <- vector(mode = "numeric", length = length(var))
+  for (i in 1:length(var)){
+    diffs <- (var[i] - as.numeric(quants))^2
+    best <- which.min(diffs)[1]
+    my_values[i] <- best
+  }
+  cols <- colorRampPalette(cols)(length(bins))
+  cols <- adjustcolor(cols, alpha.f = 0.6)
+  map("county", "fl", fill = TRUE, col = cols[my_values])
+  
+  legend_colors <- colorRampPalette(cols)(25)
+  legend("bottomleft", # position
+         legend = c(min(round(quants, digits = legend_round)),
+                    rep(NA, 11),
+                    median(round(quants, digits = legend_round)),
+                    rep(NA, 11),
+                    max(round(quants, digits = legend_round))),
+         fill = legend_colors,
+         cex = 0.75,
+         y.intersp = 0.5,
+         border=NA,
+         bty = "n",
+         text.col = "black")
+  
+}
+
+setwd(public)
+pdf('maps_for_tony.pdf')
+par(mfrow = c(2,2))
+map_fun()
+title(main = "Expected immunization rate by county")
+
+map_fun(var = fl$predicted_mean_elem, cols = c("white", "darkgreen"))
+title(main = "Elementary only")
+
+map_fun(var = fl$predicted_mean_mid, cols = c("yellow", "blue"))
+title(main = "Middle only")
+
+map_fun(var = fl$predicted_mean_high, cols = c("white", "purple"))
+title(main = "High only")
+par(mfrow = c(1,1))
+
+map_fun(var = fl$predicted_number, cols = c("red", "white", "purple"))
+title(main = "Number of predicted immunizations (assuming all public schools")
+par(mfrow = c(1,1))
+dev.off()
+
+
+
+
+
+#predict- this shows prediction on the actual data we used to train the model
 final$predicted <- predict(mod, 
                             newdata = final)
 summary(final$predicted)
