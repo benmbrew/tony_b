@@ -289,7 +289,7 @@ text(x = bp[,1],
      y = by_county$avg_vac,
      pos = 3,
      labels = paste0(round(by_county$avg_vac, digits = 1), "%"),
-     cex = 0.7,
+     cex = 0.5,
      col = adjustcolor("black", alpha.f = 0.7))
 box("plot")
 abline(h = seq(0,30, 2), col = adjustcolor("black", alpha.f = 0.2), lty = 3)
@@ -346,7 +346,7 @@ plot(final$per_hispanic, final$percent_vaccinated,
 #not very interesting with race...
 
 #basic linear model 
-
+# should we do number vaccinated or percent vaccinated?
 mod <- lm(number_vaccinated ~ 
             totmem + 
             type + 
@@ -357,6 +357,8 @@ mod <- lm(number_vaccinated ~
           data=final)
 summary(mod)
 
+library(xtable)
+xtable(mod)
 # MAKE VISUALS OF PREDICTIONS
 fake <- expand.grid(totmem = 1000,
                     type = unique(final$type),
@@ -371,6 +373,7 @@ fake$lwr <- fake_int$lwr
 fake$upr <- fake_int$upr
 
 # Plot fake predictions
+#dont understand this starting here
 plot_fake <- function(per_black = 20,
                       type = "elem",
                       col = "red",
@@ -479,3 +482,4 @@ plot(x = final$predicted,
 axis(1,at=axes_sc)
 axis(2,at=axes_sc,las=1)
 lines(1,1)
+
