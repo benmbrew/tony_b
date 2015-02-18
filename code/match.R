@@ -347,7 +347,7 @@ plot(final$per_hispanic, final$percent_vaccinated,
 
 #basic linear model 
 # should we do number vaccinated or percent vaccinated?
-mod <- lm(number_vaccinated ~ 
+mod <- lm(percent_vaccinated ~ 
             totmem + 
             type + 
             per_black +
@@ -359,7 +359,9 @@ summary(mod)
 
 library(xtable)
 xtable(mod)
-# MAKE VISUALS OF PREDICTIONS
+# MAKE VISUALS OF PREDICTIONS - predicting on fake data. expand. grid- makes data fram
+#of all combinations of values you have given. black is from 1 to 100, expand. grid makes
+# 100 times 100 of all possible combination. 
 fake <- expand.grid(totmem = 1000,
                     type = unique(final$type),
                     per_black = 0:100,
@@ -401,6 +403,9 @@ plot_fake(type = "mid", add = TRUE, col = "green")
 plot_fake(type = "high", add = TRUE, col = "blue")
 
 # PREDICT OVER ALL THE SCHOOLS
+#school is all the public schools
+#use tony data to predict public schools
+#trained the model with tony's data and predict on general schools
 school$predicted <- predict(mod, newdata = school)
 school_int <- data.frame(predict(object = mod,
                                interval = "prediction",
@@ -408,22 +413,19 @@ school_int <- data.frame(predict(object = mod,
                                level = 0.95))
 school$lwr <- school_int$lwr
 school$upr <- school_int$upr
-
+hist(school$predicted) #20 percent are the one we are interested in.
 # Create predicted RATES
-school$predicted_rate <- school$predicted / school$totmem * 100
-school$lwr_rate <- school$lwr / school$totmem * 100
-school$upr_rate <- school$upr / school$totmem * 100
 
 # Order schools by predicted imm rate
-school <- school[rev(order(school$predicted_rate)),]
+school <- school[rev(order(school$predicted)),]
 
 # Remove NAs
-school <- school[which(!is.na(school$predicted_rate)),]
+school <- school[which(!is.na(school$predicted)),]
 
 # Remove those with screwy denominators (ie, predicted rate greater than denom)
-school <- school[which(school$predicted_rate < 100),]
+school <- school[which(school$predicted < 100),] #write csv and add column predicted number
 
-#predict 
+#predict- this shows prediction 
 
 final$predicted <- predict(mod, 
                             newdata = final)
