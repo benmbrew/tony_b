@@ -1,5 +1,5 @@
 
-
+# for xing 
 # Read in # what does skip and stingAsFactors do?
 setwd("/home/benbrew/Documents/tony_b/public_data")
 race <- read.csv("RaceGender.csv", skip = 6, stringsAsFactors = FALSE)
